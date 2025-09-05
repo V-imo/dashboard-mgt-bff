@@ -83,6 +83,15 @@
         }
       ]
     },
+    "deploy:watch": {
+      "name": "deploy:watch",
+      "steps": [
+        {
+          "exec": "cdk deploy --all --method=direct --outputs-file=test.output.json --watch --hotswap-fallback --require-approval=never",
+          "receiveArgs": true
+        }
+      ]
+    },
     "destroy": {
       "name": "destroy",
       "description": "Destroys your cdk app in the AWS cloud",

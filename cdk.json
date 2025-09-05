@@ -8,7 +8,7 @@
   "watch": {
     "include": [
       "src/**/*.ts",
-      "test/**/*.ts"
+      "src/**/*.tsx"
     ],
     "exclude": [
       "README.md",
