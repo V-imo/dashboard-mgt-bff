@@ -8,23 +8,11 @@ import { eventualAssertion } from "../utils"
 import { ApiClient } from "../utils/api"
 import { generateInspection } from "../utils/generator"
 
-const { ServerlessSpyWsUrl, ApiUrl } = Object.values(
+const { ApiUrl } = Object.values(
   JSON.parse(fs.readFileSync("test.output.json", "utf8")),
 )[0] as Record<string, string>
 
 const apiClient = new ApiClient(ApiUrl)
-
-let serverlessSpyListener: ServerlessSpyListener<ServerlessSpyEvents>
-beforeEach(async () => {
-  serverlessSpyListener =
-    await createServerlessSpyListener<ServerlessSpyEvents>({
-      serverlessSpyWsUrl: ServerlessSpyWsUrl,
-    })
-})
-
-afterEach(async () => {
-  serverlessSpyListener.stop()
-})
 
 jest.setTimeout(120000)
 
