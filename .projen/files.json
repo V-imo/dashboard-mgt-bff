@@ -3,7 +3,7 @@
     ".eslintrc.json",
     ".gitattributes",
     ".github/pull_request_template.md",
-    ".github/workflows/deploy.yml",
+    ".github/workflows/ci-cd.yml",
     ".gitignore",
     ".npmignore",
     ".projen/deps.json",

@@ -5,7 +5,7 @@
 /.eslintrc.json linguist-generated
 /.gitattributes linguist-generated
 /.github/pull_request_template.md linguist-generated
-/.github/workflows/deploy.yml linguist-generated
+/.github/workflows/ci-cd.yml linguist-generated
 /.gitignore linguist-generated
 /.npmignore linguist-generated
 /.projen/** linguist-generated
