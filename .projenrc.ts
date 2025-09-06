@@ -1,19 +1,45 @@
 import { Projalf } from "projalf"
+import { javascript } from "projen"
+
 const project = new Projalf({
   cdkVersion: "2.1.0",
   defaultReleaseBranch: "main",
-  devDeps: ["projalf"],
   name: "dashboard-mgt-bff",
   projenrcTs: true,
 
   watchIncludes: ["src/**/*.ts", "src/**/*.tsx"],
 
-  // deps: [],                /* Runtime dependencies of this module. */
+  deps: [
+    "@aws-lambda-powertools/logger",
+    "@aws-lambda-powertools/tracer",
+    "dynamodb-toolbox",
+    "aws-cdk-lib",
+    "@aws-sdk/client-dynamodb",
+    "@aws-sdk/lib-dynamodb",
+    "zod",
+    "hono",
+    "@hono/zod-openapi",
+    "@hono/swagger-ui",
+    "@middy/core",
+    "serverless-spy",
+    "date-fns",
+    "uuid",
+  ],
+  devDeps: ["projalf@0.0.19", "@faker-js/faker@8", "exponential-backoff"],
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // packageName: undefined,  /* The "name" in package.json. */
+
+  jestOptions: {
+    configFilePath: "jest.config.json",
+    jestConfig: {
+      testMatch: ["<rootDir>/(test/unit|src)/**/*(*.)@(spec|test).ts?(x)"],
+      transform: {
+        "^.+\\.tsx?$": new javascript.Transform("ts-jest", {
+          tsconfig: "tsconfig.dev.json",
+        }),
+      },
+    },
+  },
 })
-project.addTask("deploy:watch", {
-  exec: "cdk deploy --all --method=direct --outputs-file=test.output.json --watch --hotswap-fallback --require-approval=never",
-  receiveArgs: true,
-})
+
 project.synth()

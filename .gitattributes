@@ -13,6 +13,9 @@
 /.projen/files.json linguist-generated
 /.projen/tasks.json linguist-generated
 /cdk.json linguist-generated
+/jest.config.json linguist-generated
+/jest.e2e.config.json linguist-generated
+/jest.integ.config.json linguist-generated
 /LICENSE linguist-generated
 /package-lock.json linguist-generated
 /package.json linguist-generated

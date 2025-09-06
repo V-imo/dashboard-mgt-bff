@@ -111,7 +111,7 @@
       "error"
     ],
     "@stylistic/member-delimiter-style": [
-      "error"
+      "off"
     ],
     "@stylistic/semi": [
       "error",

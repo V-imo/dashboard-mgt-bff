@@ -29,9 +29,7 @@ jspm_packages/
 *.tgz
 .yarn-integrity
 .cache
-/test-reports/
-junit.xml
-/coverage/
+!/jest.config.json
 !/.github/pull_request_template.md
 !/test/
 !/tsconfig.json
@@ -46,4 +44,9 @@ junit.xml
 .cdk.staging/
 .parcel-cache/
 !/.github/workflows/deploy.yml
+!/jest.integ.config.json
+/test-reports/
+junit.xml
+!/jest.e2e.config.json
+/coverage/
 !/.projenrc.ts

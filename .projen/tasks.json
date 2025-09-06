@@ -199,6 +199,22 @@
         },
         {
           "spawn": "eslint"
+        },
+        {
+          "exec": "jest --passWithNoTests --updateSnapshot",
+          "receiveArgs": true
+        },
+        {
+          "exec": "jest --passWithNoTests --updateSnapshot",
+          "receiveArgs": true
+        }
+      ]
+    },
+    "test:e2e": {
+      "name": "test:e2e",
+      "steps": [
+        {
+          "exec": "jest --config jest.e2e.config.json --runInBand --passWithNoTests"
         }
       ]
     },
