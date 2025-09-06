@@ -25,21 +25,9 @@ const project = new Projalf({
     "date-fns",
     "uuid",
   ],
-  devDeps: ["projalf@0.0.19", "@faker-js/faker@8", "exponential-backoff"],
+  devDeps: ["projalf@0.0.21", "@faker-js/faker@8", "exponential-backoff"],
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // packageName: undefined,  /* The "name" in package.json. */
-
-  jestOptions: {
-    configFilePath: "jest.config.json",
-    jestConfig: {
-      testMatch: ["<rootDir>/(test/unit|src)/**/*(*.)@(spec|test).ts?(x)"],
-      transform: {
-        "^.+\\.tsx?$": new javascript.Transform("ts-jest", {
-          tsconfig: "tsconfig.dev.json",
-        }),
-      },
-    },
-  },
 })
 
 project.synth()

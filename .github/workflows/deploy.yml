@@ -2,8 +2,11 @@
 
 name: deploy
 on:
-  pull_request: {}
-  push:
+  workflow_run:
+    workflows:
+      - test
+    types:
+      - completed
     branches:
       - main
 jobs:
@@ -12,7 +15,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
-    if: github.event_name == 'pull_request'
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,7 +41,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
