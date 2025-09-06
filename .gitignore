@@ -43,8 +43,7 @@ jspm_packages/
 /cdk.out/
 .cdk.staging/
 .parcel-cache/
-!/.github/workflows/test.yml
-!/.github/workflows/deploy.yml
+!/.github/workflows/ci-cd.yml
 !/jest.integ.config.json
 /test-reports/
 junit.xml
