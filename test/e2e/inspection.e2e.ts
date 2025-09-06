@@ -1,9 +1,4 @@
 import fs from "fs"
-import {
-  ServerlessSpyListener,
-  createServerlessSpyListener,
-} from "serverless-spy"
-import { ServerlessSpyEvents } from "../spy"
 import { eventualAssertion } from "../utils"
 import { ApiClient } from "../utils/api"
 import { generateInspection } from "../utils/generator"
