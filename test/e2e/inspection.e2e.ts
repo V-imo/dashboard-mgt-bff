@@ -23,13 +23,17 @@ const { ApiUrl, ServerlessSpyWsUrl } = Object.values(
 const apiClient = new ApiClient(ApiUrl)
 
 let serverlessSpyListener: ServerlessSpyListener<ServerlessSpyEvents>
-
 beforeEach(async () => {
+  const errors: any[] = []
   serverlessSpyListener =
     await createServerlessSpyListener<ServerlessSpyEvents>({
-      serverlessSpyWsUrl: ServerlessSpyWsUrl,
+      serverlessSpyWsUrl: ServerlessSpyWsUrl, // keep as host/scope, no scheme
+      debugMode: true,
+      connectionOpenReject: (err) => {
+        errors.push(err)
+      },
     })
-})
+}, 10000)
 
 afterEach(async () => {
   serverlessSpyListener.stop()
