@@ -7,10 +7,7 @@ import {
   InspectionDeletedEvent,
   InspectionUpdatedEvent,
 } from "vimo-events"
-import {
-  InspectionEntity,
-  InspectionEntityType,
-} from "../core/inspection/inspection.entity"
+import { InspectionEntity } from "../core/inspection/inspection.entity"
 import { tracer } from "../core/utils"
 
 const eventBridge = tracer.captureAWSv3Client(new EventBridgeClient())
@@ -26,27 +23,15 @@ export const handler = async (event: DynamoDBStreamEvent) => {
           unmarshall(object),
         )
         if (record.eventName === "INSERT") {
-          await InspectionCreatedHandler(item)
+          await eventBridge.send(InspectionCreatedEvent.build(item))
         }
         if (record.eventName === "REMOVE") {
-          await InspectionDeletedHandler(item)
+          await eventBridge.send(InspectionDeletedEvent.build(item))
         }
         if (record.eventName === "MODIFY") {
-          await InspectionUpdatedHandler(item)
+          await eventBridge.send(InspectionUpdatedEvent.build(item))
         }
       }
     }),
   )
-}
-
-const InspectionCreatedHandler = async (item: InspectionEntityType) => {
-  await eventBridge.send(InspectionCreatedEvent.build(item))
-}
-
-const InspectionDeletedHandler = async (item: InspectionEntityType) => {
-  await eventBridge.send(InspectionDeletedEvent.build(item))
-}
-
-const InspectionUpdatedHandler = async (item: InspectionEntityType) => {
-  await eventBridge.send(InspectionUpdatedEvent.build(item))
 }
