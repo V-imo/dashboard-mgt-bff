@@ -74,6 +74,7 @@ export class DashboardMgtBff extends cdk.Stack {
         allowHeaders: ["*"],
         allowMethods: [apigw.CorsHttpMethod.ANY],
         allowOrigins: ["*"],
+        allowCredentials: false,
       },
     })
     const apiFunction = new ln.NodejsFunction(this, "ApiFunction", {
