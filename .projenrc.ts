@@ -31,7 +31,7 @@ const project = new Projalf({
     "uuid",
     "vimo-events@latest",
   ],
-  devDeps: ["projalf@0.0.25", "@faker-js/faker@8", "exponential-backoff"],
+  devDeps: ["projalf@0.0.26", "@faker-js/faker@8", "exponential-backoff"],
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // packageName: undefined,  /* The "name" in package.json. */
 })

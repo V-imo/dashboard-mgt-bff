@@ -35,10 +35,10 @@ jobs:
           CDK_DEPLOY_ACCOUNT: ${{ secrets.AWS_TEST_ACCOUNT }}
           CDK_DEPLOY_REGION: ${{ secrets.AWS_REGION || 'eu-central-1' }}
         run: npm run deploy -- -c stage=${{ steps.stage.outputs.STAGE_ID }} --require-approval never
-      - name: Assume TEST role for E2E
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS credentials for test account
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ secrets.TEST_ROLE_ARN }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_TEST_ACCOUNT }}:role/github-actions-role
           aws-region: ${{ secrets.AWS_REGION || 'eu-central-1' }}
       - name: Verify identity (TEST)
         run: aws sts get-caller-identity
