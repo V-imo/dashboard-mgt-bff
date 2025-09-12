@@ -34,7 +34,7 @@ jobs:
         env:
           CDK_DEPLOY_ACCOUNT: ${{ secrets.AWS_TEST_ACCOUNT }}
           CDK_DEPLOY_REGION: ${{ secrets.AWS_REGION || 'eu-central-1' }}
-        run: npm run deploy -- -c stage=${{ steps.stage.outputs.STAGE_ID }} --require-approval never
+        run: npm run deploy -- -c stage=${{ steps.stage.outputs.STAGE_ID }} --require-approval never --outputs-file=test.output.json
       - name: Configure AWS credentials for test account
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -80,7 +80,7 @@ jobs:
         env:
           CDK_DEPLOY_ACCOUNT: ${{ secrets.AWS_DEV_ACCOUNT }}
           CDK_DEPLOY_REGION: ${{ secrets.AWS_REGION || 'eu-central-1' }}
-        run: npm run deploy -- -c stage=dev --require-approval never
+        run: npm run deploy -- -c stage=dev --require-approval never --outputs-file=test.output.json
   deploy_prod:
     needs: test
     runs-on: ubuntu-latest
@@ -107,4 +107,4 @@ jobs:
         env:
           CDK_DEPLOY_ACCOUNT: ${{ secrets.AWS_PROD_ACCOUNT }}
           CDK_DEPLOY_REGION: ${{ secrets.AWS_REGION || 'eu-central-1' }}
-        run: npm run deploy -- -c stage=prod --require-approval never
+        run: npm run deploy -- -c stage=prod --require-approval never --outputs-file=test.output.json
