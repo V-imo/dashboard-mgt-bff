@@ -5,6 +5,7 @@ import {
   string,
   InputItem,
   number,
+  any,
 } from "dynamodb-toolbox"
 import { DashboardMgtBffTable } from "../dynamodb"
 
@@ -12,10 +13,12 @@ export const InspectionEntity = new Entity({
   name: "Inspection",
   schema: item({
     inspectionId: string().key(),
-    housingId: string().key(),
+    propertyId: string().key(),
     agencyId: string().key(),
-    status: string().enum("PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"),
-    inspectorId: string().optional(),
+    status: string().enum("TO_DO", "IN_PROGRESS", "DONE", "CANCELED"),
+    inspectorId: string(),
+    date: string(),
+    rooms: any().optional(),
 
     deleted: boolean().optional(),
     oplock: number(),
@@ -23,15 +26,15 @@ export const InspectionEntity = new Entity({
   }),
   computeKey: ({
     inspectionId,
-    housingId,
+    propertyId,
     agencyId,
   }: {
     inspectionId: string
-    housingId: string
+    propertyId: string
     agencyId: string
   }) => ({
     PK: `AGENCY#${agencyId}`,
-    SK: `HOUSING#${housingId}#INSPECTION#${inspectionId}`,
+    SK: `HOUSING#${propertyId}#INSPECTION#${inspectionId}`,
   }),
   table: DashboardMgtBffTable,
 })

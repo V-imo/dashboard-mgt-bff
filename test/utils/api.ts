@@ -3,10 +3,11 @@ import type { Routes } from "../../src/functions/api"
 
 export type InspectionInput = {
   inspectionId: string
-  housingId: string
+  propertyId: string
   agencyId: string
-  status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
-  inspectorId: string
+  status: "TO_DO" | "IN_PROGRESS" | "DONE" | "CANCELED"
+  inspectorId?: string
+  date: string
 }
 
 export class ApiClient {
@@ -40,11 +41,11 @@ export class ApiClient {
   async deleteInspection(
     inspectionId: string,
     agencyId: string,
-    housingId: string,
+    propertyId: string,
   ) {
     const response = await this.client.inspection[":inspectionId"].$delete({
       param: { inspectionId },
-      query: { agencyId, housingId },
+      query: { agencyId, propertyId },
     })
     return response.json()
   }

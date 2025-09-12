@@ -25,10 +25,10 @@ export namespace Inspection {
   export async function del(
     inspectionId: string,
     agencyId: string,
-    housingId: string
+    propertyId: string,
   ) {
     return InspectionEntity.build(DeleteItemCommand)
-      .key({ inspectionId, agencyId, housingId })
+      .key({ inspectionId, agencyId, propertyId })
       .send()
   }
 }
