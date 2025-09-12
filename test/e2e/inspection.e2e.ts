@@ -30,7 +30,7 @@ beforeEach(async () => {
       serverlessSpyWsUrl: ServerlessSpyWsUrl, // keep as host/scope, no scheme
       debugMode: true,
       connectionOpenReject: (err) => {
-        errors.push(err)
+        console.error("SSPY connection error", err) // expect 403/authorization error on policy issues
       },
     })
 }, 10000)
@@ -122,8 +122,12 @@ test("should modify an inspection", async () => {
       },
     )
   ).getData()
-  expect(eventInspectionUpdated.detail.data.status).toEqual(newInspection.status)
-  expect(eventInspectionUpdated.detail.data.inspectorId).toEqual(newInspection.inspectorId)
+  expect(eventInspectionUpdated.detail.data.status).toEqual(
+    newInspection.status,
+  )
+  expect(eventInspectionUpdated.detail.data.inspectorId).toEqual(
+    newInspection.inspectorId,
+  )
 })
 
 test("should delete an inspection", async () => {
