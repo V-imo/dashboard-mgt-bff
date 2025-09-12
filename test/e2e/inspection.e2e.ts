@@ -24,14 +24,9 @@ const apiClient = new ApiClient(ApiUrl)
 
 let serverlessSpyListener: ServerlessSpyListener<ServerlessSpyEvents>
 beforeEach(async () => {
-  const errors: any[] = []
   serverlessSpyListener =
     await createServerlessSpyListener<ServerlessSpyEvents>({
-      serverlessSpyWsUrl: ServerlessSpyWsUrl, // keep as host/scope, no scheme
-      debugMode: true,
-      connectionOpenReject: (err) => {
-        console.error("SSPY connection error", err) // expect 403/authorization error on policy issues
-      },
+      serverlessSpyWsUrl: ServerlessSpyWsUrl,
     })
 }, 10000)
 
