@@ -1,5 +1,4 @@
 import { Projalf } from "projalf"
-import { javascript } from "projen"
 
 const project = new Projalf({
   cdkVersion: "2.1.0",
@@ -12,10 +11,16 @@ const project = new Projalf({
   deps: [
     "@aws-lambda-powertools/logger",
     "@aws-lambda-powertools/tracer",
-    "dynamodb-toolbox",
-    "aws-cdk-lib",
+
     "@aws-sdk/client-dynamodb",
+    "@aws-sdk/client-eventbridge",
     "@aws-sdk/lib-dynamodb",
+    "@aws-sdk/util-dynamodb",
+
+    "aws-cdk-lib",
+    "aws-lambda",
+
+    "dynamodb-toolbox",
     "zod",
     "hono",
     "@hono/zod-openapi",
@@ -24,6 +29,7 @@ const project = new Projalf({
     "serverless-spy",
     "date-fns",
     "uuid",
+    "vimo-events@latest",
   ],
   devDeps: ["projalf@0.0.23", "@faker-js/faker@8", "exponential-backoff"],
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */

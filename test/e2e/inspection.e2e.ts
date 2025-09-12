@@ -1,15 +1,41 @@
 import fs from "fs"
+import {
+  ServerlessSpyListener,
+  createServerlessSpyListener,
+} from "serverless-spy"
+import {
+  InspectionCreatedEvent,
+  InspectionCreatedEventEnvelope,
+  InspectionUpdatedEvent,
+  InspectionUpdatedEventEnvelope,
+  InspectionDeletedEvent,
+  InspectionDeletedEventEnvelope,
+} from "vimo-events"
+import { ServerlessSpyEvents } from "../spy"
 import { eventualAssertion } from "../utils"
 import { ApiClient } from "../utils/api"
 import { generateInspection } from "../utils/generator"
 
-const { ApiUrl } = Object.values(
+const { ApiUrl, ServerlessSpyWsUrl } = Object.values(
   JSON.parse(fs.readFileSync("test.output.json", "utf8")),
 )[0] as Record<string, string>
 
 const apiClient = new ApiClient(ApiUrl)
 
-jest.setTimeout(120000)
+let serverlessSpyListener: ServerlessSpyListener<ServerlessSpyEvents>
+
+beforeEach(async () => {
+  serverlessSpyListener =
+    await createServerlessSpyListener<ServerlessSpyEvents>({
+      serverlessSpyWsUrl: ServerlessSpyWsUrl,
+    })
+})
+
+afterEach(async () => {
+  serverlessSpyListener.stop()
+})
+
+jest.setTimeout(60000)
 
 test("should create an inspection", async () => {
   const inspection = generateInspection()
@@ -25,12 +51,25 @@ test("should create an inspection", async () => {
       const result = json[0]
       expect(result).toBeDefined()
       expect(result?.inspectionId).toEqual(inspectionId)
-      expect(result?.housingId).toEqual(inspection.housingId)
+      expect(result?.propertyId).toEqual(inspection.propertyId)
       expect(result?.agencyId).toEqual(inspection.agencyId)
       expect(result?.status).toEqual(inspection.status)
       expect(result?.inspectorId).toEqual(inspection.inspectorId)
+      expect(result?.date).toBeDefined()
     },
   )
+
+  const eventInspectionCreated = (
+    await serverlessSpyListener.waitForEventBridgeEventBus<InspectionCreatedEventEnvelope>(
+      {
+        condition: ({ detail }) =>
+          detail.type === InspectionCreatedEvent.type &&
+          detail.data.inspectionId === inspectionId,
+        timoutMs: 30000,
+      },
+    )
+  ).getData()
+  expect(eventInspectionCreated.detail.data.date).toMatch(inspection.date)
 })
 
 test("should modify an inspection", async () => {
@@ -42,7 +81,7 @@ test("should modify an inspection", async () => {
     ...inspection,
     inspectionId,
     agencyId: inspection.agencyId,
-    housingId: inspection.housingId,
+    propertyId: inspection.propertyId,
     status: "IN_PROGRESS" as const,
   }
 
@@ -68,6 +107,19 @@ test("should modify an inspection", async () => {
       expect(result?.inspectorId).toEqual(newInspection.inspectorId)
     },
   )
+
+  const eventInspectionUpdated = (
+    await serverlessSpyListener.waitForEventBridgeEventBus<InspectionUpdatedEventEnvelope>(
+      {
+        condition: ({ detail }) =>
+          detail.type === InspectionUpdatedEvent.type &&
+          detail.data.inspectionId === inspectionId,
+        timoutMs: 30000,
+      },
+    )
+  ).getData()
+  expect(eventInspectionUpdated.detail.data.status).toEqual(newInspection.status)
+  expect(eventInspectionUpdated.detail.data.inspectorId).toEqual(newInspection.inspectorId)
 })
 
 test("should delete an inspection", async () => {
@@ -80,7 +132,7 @@ test("should delete an inspection", async () => {
       const res = await apiClient.deleteInspection(
         inspectionId,
         inspection.agencyId,
-        inspection.housingId,
+        inspection.propertyId,
       )
       return res
     },
@@ -99,6 +151,18 @@ test("should delete an inspection", async () => {
       expect(result).toBeUndefined()
     },
   )
+
+  const eventInspectionDeleted = (
+    await serverlessSpyListener.waitForEventBridgeEventBus<InspectionDeletedEventEnvelope>(
+      {
+        condition: ({ detail }) =>
+          detail.type === InspectionDeletedEvent.type &&
+          detail.data.inspectionId === inspectionId,
+        timoutMs: 30000,
+      },
+    )
+  ).getData()
+  expect(eventInspectionDeleted.detail.data.inspectionId).toEqual(inspectionId)
 })
 
 test("should get a lot of inspections", async () => {

@@ -1,13 +1,14 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi"
-import { Inspection } from "../../core/inspection"
 import { v4 as uuid } from "uuid"
+import { Inspection } from "../../core/inspection"
 
 export const InspectionSchema = z
   .object({
     inspectionId: z.string().optional(),
-    housingId: z.string(),
-    status: z.literal(["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),
-    inspectorId: z.string(),
+    propertyId: z.string(),
+    status: z.enum(["TO_DO", "IN_PROGRESS", "DONE", "CANCELED"]),
+    inspectorId: z.string().optional(),
+    date: z.string(),
     agencyId: z.string(),
   })
   .openapi("Inspection")
@@ -115,13 +116,13 @@ export const route = new OpenAPIHono()
       path: "/{inspectionId}",
       request: {
         params: z.object({ inspectionId: z.string() }),
-        query: z.object({ agencyId: z.string(), housingId: z.string() }),
+        query: z.object({ agencyId: z.string(), propertyId: z.string() }),
       },
       responses: {
         200: {
           content: {
             "application/json": {
-              schema: InspectionSchema,
+              schema: z.string(),
             },
           },
           description: "Delete an inspection",
@@ -130,8 +131,8 @@ export const route = new OpenAPIHono()
     }),
     async (c) => {
       const { inspectionId } = c.req.valid("param")
-      const { agencyId, housingId } = c.req.query()
-      await Inspection.del(inspectionId, agencyId, housingId)
+      const { agencyId, propertyId } = c.req.query()
+      await Inspection.del(inspectionId, agencyId, propertyId)
       return c.json("Inspection deleted", 200)
     },
   )
