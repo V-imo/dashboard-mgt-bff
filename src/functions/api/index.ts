@@ -7,6 +7,7 @@ import { handle } from "hono/aws-lambda"
 import { HTTPException } from "hono/http-exception"
 import { logger as loggerMiddleware } from "hono/logger"
 
+import { route as AgencyRoute } from "./agency"
 import { route as InspectionRoute } from "./inspection"
 import { logger, tracer } from "../../core/utils"
 
@@ -18,20 +19,23 @@ app.use(
   }),
 )
 
-const routes = app.route("/inspection", InspectionRoute).onError((error, c) => {
-  console.error(error)
+const routes = app
+  .route("/inspection", InspectionRoute)
+  .route("/agency", AgencyRoute)
+  .onError((error, c) => {
+    console.error(error)
 
-  if (error instanceof HTTPException) {
-    return c.json(error.message, error.status)
-  }
-  return c.json(
-    {
-      code: "internal",
-      message: "Internal server error",
-    },
-    500,
-  )
-})
+    if (error instanceof HTTPException) {
+      return c.json(error.message, error.status)
+    }
+    return c.json(
+      {
+        code: "internal",
+        message: "Internal server error",
+      },
+      500,
+    )
+  })
 
 app
   .doc("/doc", {

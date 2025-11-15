@@ -1,5 +1,7 @@
 import { hc } from "hono/client"
+import { z } from "zod"
 import type { Routes } from "../../src/functions/api"
+import { AgencySchema } from "../../src/functions/api/agency"
 
 export type InspectionInput = {
   inspectionId: string
@@ -9,6 +11,7 @@ export type InspectionInput = {
   inspectorId?: string
   date: string
 }
+export type AgencyInput = Omit<z.infer<typeof AgencySchema>, "agencyId">
 
 export class ApiClient {
   client: ReturnType<typeof hc<Routes>>
@@ -46,6 +49,34 @@ export class ApiClient {
     const response = await this.client.inspection[":inspectionId"].$delete({
       param: { inspectionId },
       query: { agencyId, propertyId },
+    })
+    return response.json()
+  }
+
+  async createAgency(agency: Omit<AgencyInput, "agencyId">) {
+    const response = await this.client.agency.$post({
+      json: agency,
+    })
+    return response.json()
+  }
+
+  async deleteAgency(agencyId: string) {
+    const response = await this.client.agency[":agencyId"].$delete({
+      param: { agencyId },
+    })
+    return response.json()
+  }
+
+  async getAgency(agencyId: string) {
+    const response = await this.client.agency[":agencyId"].$get({
+      param: { agencyId },
+    })
+    return response.json()
+  }
+
+  async updateAgency(agency: z.infer<typeof AgencySchema>) {
+    const response = await this.client.agency.$patch({
+      json: agency,
     })
     return response.json()
   }

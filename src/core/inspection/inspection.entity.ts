@@ -1,12 +1,4 @@
-import {
-  boolean,
-  Entity,
-  item,
-  string,
-  InputItem,
-  number,
-  any,
-} from "dynamodb-toolbox"
+import { Entity, item, string, InputItem, number, any } from "dynamodb-toolbox"
 import { DashboardMgtBffTable } from "../dynamodb"
 
 export const InspectionEntity = new Entity({
@@ -20,9 +12,7 @@ export const InspectionEntity = new Entity({
     date: string(),
     rooms: any().optional(),
 
-    deleted: boolean().optional(),
     oplock: number(),
-    ttl: number().optional(),
   }),
   computeKey: ({
     inspectionId,

@@ -73,14 +73,12 @@ test("should create an inspection", async () => {
 
 test("should modify an inspection", async () => {
   const inspection = generateInspection()
-
   const inspectionId = await apiClient.createInspection(inspection)
 
   const newInspection = {
     ...inspection,
     inspectionId,
     agencyId: inspection.agencyId,
-    propertyId: inspection.propertyId,
     status: "IN_PROGRESS" as const,
   }
 

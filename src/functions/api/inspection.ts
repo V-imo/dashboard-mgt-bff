@@ -1,4 +1,5 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi"
+import { getUnixTime } from "date-fns"
 import { v4 as uuid } from "uuid"
 import { Inspection } from "../../core/inspection"
 
@@ -76,6 +77,7 @@ export const route = new OpenAPIHono()
       await Inspection.update({
         ...inspection,
         inspectionId,
+        oplock: getUnixTime(new Date()),
       })
       return c.json(inspectionId, 200)
     },
@@ -106,7 +108,10 @@ export const route = new OpenAPIHono()
     }),
     async (c) => {
       const inspection = await c.req.json()
-      await Inspection.update({ ...inspection })
+      await Inspection.update({
+        ...inspection,
+        oplock: getUnixTime(new Date()),
+      })
       return c.json("Inspection updated", 200)
     },
   )
