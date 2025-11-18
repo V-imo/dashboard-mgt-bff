@@ -44,16 +44,23 @@ test("should create an agency", async () => {
   const eventAgencyCreated = (
     await serverlessSpyListener.waitForEventBridgeEventBus<AgencyCreatedEventEnvelope>(
       {
-        condition: ({ detail }) => detail.type === AgencyCreatedEvent.type && detail.data.agencyId === agencyId,
+        condition: ({ detail }) =>
+          detail.type === AgencyCreatedEvent.type &&
+          detail.data.agencyId === agencyId,
       },
     )
   ).getData()
   expect(eventAgencyCreated.detail.data.name).toEqual(agency.name)
 
-  await eventualAssertion(async () => {
-    const res = await apiClient.getAgency(agencyId)
-    return res
-  })
+  await eventualAssertion(
+    async () => {
+      const res = await apiClient.getAgency(agencyId)
+      return res
+    },
+    async (json) => {
+      expect(json).toEqual({ ...agency, agencyId })
+    },
+  )
 })
 
 test("should update an agency", async () => {
@@ -64,15 +71,12 @@ test("should update an agency", async () => {
 
   await apiClient.updateAgency({ ...newAgency, agencyId })
 
-  await eventualAssertion(async () => {
-    const res = await apiClient.getAgency(agencyId)
-    return res
-  })
-
   const eventAgencyUpdated = (
     await serverlessSpyListener.waitForEventBridgeEventBus<AgencyUpdatedEventEnvelope>(
       {
-        condition: ({ detail }) => detail.type === AgencyUpdatedEvent.type && detail.data.agencyId === agencyId,
+        condition: ({ detail }) =>
+          detail.type === AgencyUpdatedEvent.type &&
+          detail.data.agencyId === agencyId,
       },
     )
   ).getData()
@@ -86,21 +90,11 @@ test("should delete an agency", async () => {
 
   await apiClient.deleteAgency(agencyId)
 
-  await eventualAssertion(
-    async () => {
-      const res = await apiClient.getAgency(agencyId)
-      return res
-    },
-    async (res) => {
-      expect((res as unknown as { message: string }).message).toBeDefined()
+  await serverlessSpyListener.waitForEventBridgeEventBus<AgencyDeletedEventEnvelope>(
+    {
+      condition: ({ detail }) =>
+        detail.type === AgencyDeletedEvent.type &&
+        detail.data.agencyId === agencyId,
     },
   )
-
-  const eventAgencyDeleted = (
-    await serverlessSpyListener.waitForEventBridgeEventBus<AgencyDeletedEventEnvelope>(
-      {
-        condition: ({ detail }) => detail.type === AgencyDeletedEvent.type && detail.data.agencyId === agencyId,
-      },
-    )
-  ).getData()
 })

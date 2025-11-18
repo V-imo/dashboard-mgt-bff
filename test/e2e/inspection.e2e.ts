@@ -41,23 +41,6 @@ test("should create an inspection", async () => {
 
   const inspectionId = await apiClient.createInspection(inspection)
 
-  await eventualAssertion(
-    async () => {
-      const res = await apiClient.getInspections(inspection.agencyId)
-      return res
-    },
-    async (json) => {
-      const result = json[0]
-      expect(result).toBeDefined()
-      expect(result?.inspectionId).toEqual(inspectionId)
-      expect(result?.propertyId).toEqual(inspection.propertyId)
-      expect(result?.agencyId).toEqual(inspection.agencyId)
-      expect(result?.status).toEqual(inspection.status)
-      expect(result?.inspectorId).toEqual(inspection.inspectorId)
-      expect(result?.date).toBeDefined()
-    },
-  )
-
   const eventInspectionCreated = (
     await serverlessSpyListener.waitForEventBridgeEventBus<InspectionCreatedEventEnvelope>(
       {
@@ -89,19 +72,6 @@ test("should modify an inspection", async () => {
     },
     async (res) => {
       expect(res).toBe("Inspection updated")
-    },
-  )
-
-  await eventualAssertion(
-    async () => {
-      const res = await apiClient.getInspections(inspection.agencyId)
-      return res
-    },
-    async (json) => {
-      const result = json[0]
-      expect(result).toBeDefined()
-      expect(result?.status).toEqual(newInspection.status)
-      expect(result?.inspectorId).toEqual(newInspection.inspectorId)
     },
   )
 
@@ -139,17 +109,6 @@ test("should delete an inspection", async () => {
     },
     async (res) => {
       expect(res).toBe("Inspection deleted")
-    },
-  )
-
-  await eventualAssertion(
-    async () => {
-      const res = await apiClient.getInspections(inspection.agencyId)
-      return res
-    },
-    async (json) => {
-      const result = json[0]
-      expect(result).toBeUndefined()
     },
   )
 

@@ -2,6 +2,7 @@ import { hc } from "hono/client"
 import { z } from "zod"
 import type { Routes } from "../../src/functions/api"
 import { AgencySchema } from "../../src/functions/api/agency"
+import { PropertySchema } from "../../src/functions/api/property"
 
 export type InspectionInput = {
   inspectionId: string
@@ -12,6 +13,7 @@ export type InspectionInput = {
   date: string
 }
 export type AgencyInput = Omit<z.infer<typeof AgencySchema>, "agencyId">
+export type PropertyInput = Omit<z.infer<typeof PropertySchema>, "propertyId">
 
 export class ApiClient {
   client: ReturnType<typeof hc<Routes>>
@@ -77,6 +79,43 @@ export class ApiClient {
   async updateAgency(agency: z.infer<typeof AgencySchema>) {
     const response = await this.client.agency.$patch({
       json: agency,
+    })
+    return response.json()
+  }
+
+  async createProperty(property: PropertyInput) {
+    const response = await this.client.property.$post({
+      json: property,
+    })
+    return response.json()
+  }
+
+  async deleteProperty(agencyId: string, propertyId: string) {
+    const response = await this.client.property[":agencyId"][
+      ":propertyId"
+    ].$delete({
+      param: { agencyId, propertyId },
+    })
+    return response.json()
+  }
+
+  async getProperty(agencyId: string, propertyId: string) {
+    const response = await this.client.property[":agencyId"][":propertyId"].$get({
+      param: { agencyId, propertyId },
+    })
+    return response.json()
+  }
+
+  async updateProperty(property: PropertyInput & { propertyId: string }) {
+    const response = await this.client.property.$patch({
+      json: property,
+    })
+    return response.json()
+  }
+
+  async getProperties(agencyId: string) {
+    const response = await this.client.property[":agencyId"].$get({
+      param: { agencyId },
     })
     return response.json()
   }

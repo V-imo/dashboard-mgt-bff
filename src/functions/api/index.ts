@@ -6,10 +6,11 @@ import middy from "@middy/core"
 import { handle } from "hono/aws-lambda"
 import { HTTPException } from "hono/http-exception"
 import { logger as loggerMiddleware } from "hono/logger"
-
 import { route as AgencyRoute } from "./agency"
 import { route as InspectionRoute } from "./inspection"
+import { route as PropertyRoute } from "./property"
 import { logger, tracer } from "../../core/utils"
+
 
 const app = new OpenAPIHono()
 
@@ -22,6 +23,7 @@ app.use(
 const routes = app
   .route("/inspection", InspectionRoute)
   .route("/agency", AgencyRoute)
+  .route("/property", PropertyRoute)
   .onError((error, c) => {
     console.error(error)
 
