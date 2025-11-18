@@ -1,4 +1,4 @@
-import { Entity, item, string, InputItem, number } from "dynamodb-toolbox"
+import { Entity, item, string, InputItem, number, map } from "dynamodb-toolbox"
 import { DashboardMgtBffTable } from "../dynamodb"
 
 export const AgencyEntity = new Entity({
@@ -8,7 +8,7 @@ export const AgencyEntity = new Entity({
     name: string(),
     contactMail: string(),
     contactPhone: string().optional(),
-    address: item({
+    address: map({
       number: string(),
       street: string(),
       city: string(),

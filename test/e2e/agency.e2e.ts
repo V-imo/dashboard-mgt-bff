@@ -41,6 +41,15 @@ test("should create an agency", async () => {
 
   const agencyId = await apiClient.createAgency(agency)
 
+  const eventAgencyCreated = (
+    await serverlessSpyListener.waitForEventBridgeEventBus<AgencyCreatedEventEnvelope>(
+      {
+        condition: ({ detail }) => detail.type === AgencyCreatedEvent.type && detail.data.agencyId === agencyId,
+      },
+    )
+  ).getData()
+  expect(eventAgencyCreated.detail.data.name).toEqual(agency.name)
+
   await eventualAssertion(async () => {
     const res = await apiClient.getAgency(agencyId)
     return res
@@ -59,6 +68,15 @@ test("should update an agency", async () => {
     const res = await apiClient.getAgency(agencyId)
     return res
   })
+
+  const eventAgencyUpdated = (
+    await serverlessSpyListener.waitForEventBridgeEventBus<AgencyUpdatedEventEnvelope>(
+      {
+        condition: ({ detail }) => detail.type === AgencyUpdatedEvent.type && detail.data.agencyId === agencyId,
+      },
+    )
+  ).getData()
+  expect(eventAgencyUpdated.detail.data.name).toEqual(newAgency.name)
 })
 
 test("should delete an agency", async () => {
@@ -77,4 +95,12 @@ test("should delete an agency", async () => {
       expect((res as unknown as { message: string }).message).toBeDefined()
     },
   )
+
+  const eventAgencyDeleted = (
+    await serverlessSpyListener.waitForEventBridgeEventBus<AgencyDeletedEventEnvelope>(
+      {
+        condition: ({ detail }) => detail.type === AgencyDeletedEvent.type && detail.data.agencyId === agencyId,
+      },
+    )
+  ).getData()
 })
