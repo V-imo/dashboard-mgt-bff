@@ -16,7 +16,7 @@ export const AgencySchema = z.object({
     zipCode: z.string(),
     country: z.string(),
   }),
-})
+}).openapi("Agency")
 
 export const route = new OpenAPIHono()
   .openapi(
