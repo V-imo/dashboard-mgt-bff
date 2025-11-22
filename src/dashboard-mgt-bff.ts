@@ -1,37 +1,37 @@
-import * as cdk from "aws-cdk-lib"
-import * as apigw from "aws-cdk-lib/aws-apigatewayv2"
-import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations"
-import * as ddb from "aws-cdk-lib/aws-dynamodb"
-import * as events from "aws-cdk-lib/aws-events"
-import * as lambda from "aws-cdk-lib/aws-lambda"
-import * as levs from "aws-cdk-lib/aws-lambda-event-sources"
-import * as ln from "aws-cdk-lib/aws-lambda-nodejs"
-import * as logs from "aws-cdk-lib/aws-logs"
-import * as ssm from "aws-cdk-lib/aws-ssm"
-import { Construct } from "constructs"
-import { ServerlessSpy } from "serverless-spy"
+import * as cdk from "aws-cdk-lib";
+import * as apigw from "aws-cdk-lib/aws-apigatewayv2";
+import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import * as ddb from "aws-cdk-lib/aws-dynamodb";
+import * as events from "aws-cdk-lib/aws-events";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as levs from "aws-cdk-lib/aws-lambda-event-sources";
+import * as ln from "aws-cdk-lib/aws-lambda-nodejs";
+import * as logs from "aws-cdk-lib/aws-logs";
+import * as ssm from "aws-cdk-lib/aws-ssm";
+import { Construct } from "constructs";
+import { ServerlessSpy } from "serverless-spy";
 
 export interface DashboardMgtBffProps extends cdk.StackProps {
-  serviceName: string
-  stage: string
+  serviceName: string;
+  stage: string;
 }
 
 export class DashboardMgtBff extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DashboardMgtBffProps) {
-    super(scope, id, props)
+    super(scope, id, props);
 
-    let eventBus: cdk.aws_events.IEventBus
+    let eventBus: cdk.aws_events.IEventBus;
     if (props.stage.startsWith("test")) {
-      eventBus = new events.EventBus(this, "EventBus")
+      eventBus = new events.EventBus(this, "EventBus");
     } else {
       eventBus = events.EventBus.fromEventBusArn(
         this,
         "EventBus",
         ssm.StringParameter.valueForStringParameter(
           this,
-          `/vimo/${props.stage}/event-bus-arn`,
-        ),
-      )
+          `/vimo/${props.stage}/event-bus-arn`
+        )
+      );
     }
 
     const table = new ddb.TableV2(this, "DashboardMgtBffTable", {
@@ -43,7 +43,7 @@ export class DashboardMgtBff extends cdk.Stack {
         props.stage === "prod"
           ? cdk.RemovalPolicy.RETAIN
           : cdk.RemovalPolicy.DESTROY,
-    })
+    });
 
     const trigger = new ln.NodejsFunction(this, "Trigger", {
       entry: `${__dirname}/functions/trigger.ts`,
@@ -65,18 +65,23 @@ export class DashboardMgtBff extends cdk.Stack {
           retryAttempts: 3,
         }),
       ],
-    })
-    table.grantReadWriteData(trigger)
-    eventBus.grantPutEventsTo(trigger)
+    });
+    table.grantReadWriteData(trigger);
+    eventBus.grantPutEventsTo(trigger);
 
     const api = new apigw.HttpApi(this, "DashboardMgtBffApi", {
       corsPreflight: {
-        allowHeaders: ["*"],
+        allowHeaders: [
+          "Content-Type",
+          "Authorization",
+          "Content-Length",
+          "X-Requested-With",
+        ],
         allowMethods: [apigw.CorsHttpMethod.ANY],
         allowOrigins: ["*"],
         allowCredentials: false,
       },
-    })
+    });
     const apiFunction = new ln.NodejsFunction(this, "ApiFunction", {
       entry: `${__dirname}/functions/api/index.ts`,
       environment: {
@@ -92,32 +97,38 @@ export class DashboardMgtBff extends cdk.Stack {
       tracing: lambda.Tracing.ACTIVE,
       timeout: cdk.Duration.seconds(30),
       memorySize: 512,
-    })
-    table.grantReadWriteData(apiFunction)
+    });
+    table.grantReadWriteData(apiFunction);
 
     new cdk.CfnOutput(this, "ApiUrl", {
       value: api.url ?? "",
-    })
+    });
     new cdk.CfnOutput(this, "EventBusName", {
       value: eventBus.eventBusName,
-    })
+    });
 
     const apiIntegration = new integrations.HttpLambdaIntegration(
       "ApiIntegration",
-      apiFunction,
-    )
+      apiFunction
+    );
     api.addRoutes({
       path: "/{proxy+}",
-      methods: [apigw.HttpMethod.ANY],
+      methods: [
+        apigw.HttpMethod.GET,
+        apigw.HttpMethod.PUT,
+        apigw.HttpMethod.POST,
+        apigw.HttpMethod.PATCH,
+        apigw.HttpMethod.DELETE,
+      ],
       integration: apiIntegration,
       // authorizer: undefined, // TODO: add later
-    })
+    });
 
     if (props.stage.startsWith("test")) {
       const serverlessSpy = new ServerlessSpy(this, "ServerlessSpy", {
         generateSpyEventsFileLocation: "test/spy.ts",
-      })
-      serverlessSpy.spy()
+      });
+      serverlessSpy.spy();
     }
   }
 }

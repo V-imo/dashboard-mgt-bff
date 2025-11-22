@@ -29,6 +29,20 @@ export class ApiClient {
     return response.json()
   }
 
+  async getInspectionsByAgencyAndProperty(agencyId: string, propertyId: string) {
+    const response = await this.client.inspection[":agencyId"][":propertyId"].$get({
+      param: { agencyId, propertyId },
+    })
+    return response.json()
+  }
+
+  async getInspection(agencyId: string, propertyId: string, inspectionId: string) {
+    const response = await this.client.inspection[":agencyId"][":propertyId"][":inspectionId"].$get({
+      param: { agencyId, propertyId, inspectionId },
+    })
+    return response.json()
+  }
+
   async createInspection(inspection: Omit<InspectionInput, "inspectionId">) {
     const response = await this.client.inspection.$post({
       json: inspection,

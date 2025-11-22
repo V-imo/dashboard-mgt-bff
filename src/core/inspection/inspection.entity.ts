@@ -24,7 +24,7 @@ export const InspectionEntity = new Entity({
     agencyId: string
   }) => ({
     PK: `AGENCY#${agencyId}`,
-    SK: `HOUSING#${propertyId}#INSPECTION#${inspectionId}`,
+    SK: `PROPERTY#${propertyId}#INSPECTION#${inspectionId}`,
   }),
   table: DashboardMgtBffTable,
 })

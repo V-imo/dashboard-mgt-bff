@@ -1,17 +1,18 @@
-import { getUnixTime } from "date-fns"
+import { getUnixTime } from "date-fns";
 import {
   DeleteItemCommand,
+  GetItemCommand,
   QueryCommand,
   UpdateItemCommand,
-} from "dynamodb-toolbox"
-import { InspectionEntity, InspectionEntityType } from "./inspection.entity"
-import { DashboardMgtBffTable } from "../dynamodb"
-import { ignoreOplockError } from "../utils"
+} from "dynamodb-toolbox";
+import { InspectionEntity, InspectionEntityType } from "./inspection.entity";
+import { DashboardMgtBffTable } from "../dynamodb";
+import { ignoreOplockError } from "../utils";
 
 export namespace Inspection {
   export async function update(inspection: InspectionEntityType) {
     InspectionEntity.build(UpdateItemCommand)
-      .item({ ...inspection, oplock: getUnixTime(new Date()) })
+      .item(inspection)
       .options({
         condition: {
           or: [
@@ -21,7 +22,7 @@ export namespace Inspection {
         },
       })
       .send()
-      .catch(ignoreOplockError)
+      .catch(ignoreOplockError);
   }
 
   export async function getAllByAgency(agencyId: string) {
@@ -29,16 +30,40 @@ export namespace Inspection {
       .query({ partition: `AGENCY#${agencyId}` })
       .options({ maxPages: Infinity })
       .entities(InspectionEntity)
-      .send()
+      .send();
   }
 
   export async function del(
     inspectionId: string,
     agencyId: string,
-    propertyId: string,
+    propertyId: string
   ) {
     return InspectionEntity.build(DeleteItemCommand)
       .key({ inspectionId, agencyId, propertyId })
-      .send()
+      .send();
+  }
+
+  export async function getAllByAgencyAndProperty(
+    agencyId: string,
+    propertyId: string
+  ) {
+    return DashboardMgtBffTable.build(QueryCommand)
+      .query({
+        partition: `AGENCY#${agencyId}`,
+        range: { beginsWith: `PROPERTY#${propertyId}` },
+      })
+      .options({ maxPages: Infinity })
+      .entities(InspectionEntity)
+      .send();
+  }
+
+  export async function get(
+    agencyId: string,
+    propertyId: string,
+    inspectionId: string
+  ) {
+    return InspectionEntity.build(GetItemCommand)
+      .key({ agencyId, propertyId, inspectionId })
+      .send();
   }
 }
