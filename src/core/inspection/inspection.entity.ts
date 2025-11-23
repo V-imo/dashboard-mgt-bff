@@ -20,7 +20,7 @@ export const InspectionEntity = new Entity({
         images: list(string()).optional(),
         state: string().enum("GOOD", "BAD", "NEW", "BROKEN"),
       })),
-    })),
+    })).optional(),
 
     oplock: number(),
   }),
