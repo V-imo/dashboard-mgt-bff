@@ -1,8 +1,24 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi"
-import { getUnixTime } from "date-fns"
-import { v4 as uuid } from "uuid"
-import { z } from "zod"
-import { Property } from "../../core/property"
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { getUnixTime } from "date-fns";
+import { v4 as uuid } from "uuid";
+import { z } from "zod";
+import { Property } from "../../core/property";
+
+export const RoomsSchema = z.array(
+  z.object({
+    name: z.string(),
+    area: z.number().optional(),
+    description: z.string().optional(),
+    elements: z.array(
+      z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        images: z.array(z.string()).optional(),
+        type: z.string(),
+      })
+    ),
+  })
+)
 
 export const PropertySchema = z
   .object({
@@ -23,11 +39,11 @@ export const PropertySchema = z
         phoneNumber: z.string().optional(),
       })
       .optional(),
-    rooms: z.any().optional(),
+    rooms: RoomsSchema,
   })
-  .openapi("Property")
+  .openapi("Property");
 
-export const PropertiesSchema = z.array(PropertySchema).openapi("Properties")
+export const PropertiesSchema = z.array(PropertySchema).openapi("Properties");
 
 export const route = new OpenAPIHono()
   .openapi(
@@ -49,16 +65,16 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
-      const { agencyId } = c.req.valid("param")
-      const properties = await Property.getAllByAgency(agencyId)
+      const { agencyId } = c.req.valid("param");
+      const properties = await Property.getAllByAgency(agencyId);
       if (!properties) {
-        return c.json([], 200)
+        return c.json([], 200);
       }
       return c.json(
         properties.map((p) => PropertySchema.parse(p)),
-        200,
-      )
-    },
+        200
+      );
+    }
   )
   .openapi(
     createRoute({
@@ -87,13 +103,13 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
-      const { agencyId, propertyId } = c.req.valid("param")
-      const property = await Property.get(propertyId, agencyId)
+      const { agencyId, propertyId } = c.req.valid("param");
+      const property = await Property.get(propertyId, agencyId);
       if (!property) {
-        return c.json({ message: "Property not found" }, 404)
+        return c.json({ message: "Property not found" }, 404);
       }
-      return c.json(PropertySchema.parse(property), 200)
-    },
+      return c.json(PropertySchema.parse(property), 200);
+    }
   )
   .openapi(
     createRoute({
@@ -120,15 +136,15 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
-      const property = await c.req.json()
-      const propertyId = `property_${uuid()}`
+      const property = await c.req.json();
+      const propertyId = `property_${uuid()}`;
       await Property.update({
         ...property,
         propertyId,
         oplock: getUnixTime(new Date()),
-      })
-      return c.json(propertyId, 200)
-    },
+      });
+      return c.json(propertyId, 200);
+    }
   )
   .openapi(
     createRoute({
@@ -155,13 +171,13 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
-      const property = await c.req.json()
+      const property = await c.req.json();
       await Property.update({
         ...property,
         oplock: getUnixTime(new Date()),
-      })
-      return c.json("Property updated", 200)
-    },
+      });
+      return c.json("Property updated", 200);
+    }
   )
   .openapi(
     createRoute({
@@ -182,8 +198,8 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
-      const { agencyId, propertyId } = c.req.valid("param")
-      await Property.del(propertyId, agencyId)
-      return c.json("Property deleted", 200)
-    },
-  )
+      const { agencyId, propertyId } = c.req.valid("param");
+      await Property.del(propertyId, agencyId);
+      return c.json("Property deleted", 200);
+    }
+  );

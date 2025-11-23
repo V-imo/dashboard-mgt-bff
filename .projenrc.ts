@@ -29,7 +29,7 @@ const project = new Projalf({
     "serverless-spy",
     "date-fns",
     "uuid",
-    "vimo-events@0.23.0",
+    "vimo-events",
   ],
   devDeps: ["projalf@0.0.27", "@faker-js/faker@8", "exponential-backoff"],
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */

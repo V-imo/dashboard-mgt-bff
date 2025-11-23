@@ -1,9 +1,8 @@
-import { getUnixTime } from "date-fns";
 import {
   DeleteItemCommand,
   GetItemCommand,
   QueryCommand,
-  UpdateItemCommand,
+  UpdateAttributesCommand,
 } from "dynamodb-toolbox";
 import { InspectionEntity, InspectionEntityType } from "./inspection.entity";
 import { DashboardMgtBffTable } from "../dynamodb";
@@ -11,7 +10,7 @@ import { ignoreOplockError } from "../utils";
 
 export namespace Inspection {
   export async function update(inspection: InspectionEntityType) {
-    InspectionEntity.build(UpdateItemCommand)
+    InspectionEntity.build(UpdateAttributesCommand)
       .item(inspection)
       .options({
         condition: {

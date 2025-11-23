@@ -11,6 +11,16 @@ export const InspectionSchema = z
     inspectorId: z.string().optional(),
     date: z.string(),
     agencyId: z.string(),
+    rooms: z.array(z.object({
+      name: z.string(),
+      description: z.string().optional(),
+      elements: z.array(z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        images: z.array(z.string()).optional(),
+        state: z.enum(["GOOD", "BAD", "NEW", "BROKEN"]),
+      })),
+    })),
   })
   .openapi("Inspection");
 

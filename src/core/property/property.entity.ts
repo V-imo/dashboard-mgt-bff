@@ -1,5 +1,37 @@
-import { Entity, item, string, number, map, InputItem, any } from "dynamodb-toolbox"
-import { DashboardMgtBffTable } from "../dynamodb"
+import {
+  Entity,
+  item,
+  string,
+  number,
+  map,
+  InputItem,
+  list,
+} from "dynamodb-toolbox";
+import { DashboardMgtBffTable } from "../dynamodb";
+
+export const RoomsSchema = list(
+  map({
+    name: string(),
+    area: number().optional(),
+    description: string().optional(),
+    elements: list(
+      map({
+        name: string(),
+        description: string().optional(),
+        images: list(string()).optional(),
+        type: string().enum(
+          "FURNITURE",
+          "STRUCTURAL",
+          "ELECTRICAL",
+          "PLUMBING",
+          "VENTILATION",
+          "SURFACE",
+          "OTHER"
+        ),
+      })
+    ),
+  })
+)
 
 export const PropertyEntity = new Entity({
   name: "Property",
@@ -22,20 +54,26 @@ export const PropertyEntity = new Entity({
       phoneNumber: string().optional(),
     }).optional(),
 
-    rooms: any(),
+    rooms: RoomsSchema,
 
     oplock: number(),
   }),
 
-  computeKey: ({ propertyId, agencyId }: { propertyId: string, agencyId: string }) => ({
+  computeKey: ({
+    propertyId,
+    agencyId,
+  }: {
+    propertyId: string;
+    agencyId: string;
+  }) => ({
     PK: `AGENCY#${agencyId}`,
     SK: `PROPERTY#${propertyId}`,
   }),
 
   table: DashboardMgtBffTable,
-})
+});
 
 export type PropertyEntityType = Omit<
   InputItem<typeof PropertyEntity>,
   "created" | "entity" | "modified"
->
+>;
