@@ -1,4 +1,4 @@
-import { Entity, item, string, InputItem, number, any } from "dynamodb-toolbox"
+import { Entity, item, string, InputItem, number, any, list, map } from "dynamodb-toolbox"
 import { DashboardMgtBffTable } from "../dynamodb"
 
 export const InspectionEntity = new Entity({
@@ -10,7 +10,17 @@ export const InspectionEntity = new Entity({
     status: string().enum("TO_DO", "IN_PROGRESS", "DONE", "CANCELED"),
     inspectorId: string(),
     date: string(),
-    rooms: any().optional(),
+
+    rooms: list(map({
+      name: string(),
+      description: string().optional(),
+      elements: list(map({
+        name: string(),
+        description: string().optional(),
+        images: list(string()).optional(),
+        state: string().enum("GOOD", "BAD", "NEW", "BROKEN"),
+      })),
+    })).optional(),
 
     oplock: number(),
   }),

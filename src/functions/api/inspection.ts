@@ -5,12 +5,26 @@ import { Inspection } from "../../core/inspection";
 
 export const InspectionSchema = z
   .object({
+    agencyId: z.string(),
     inspectionId: z.string().optional(),
     propertyId: z.string(),
     status: z.enum(["TO_DO", "IN_PROGRESS", "DONE", "CANCELED"]),
     inspectorId: z.string().optional(),
     date: z.string(),
-    agencyId: z.string(),
+    rooms: z.array(
+      z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        elements: z.array(
+          z.object({
+            name: z.string(),
+            description: z.string().optional(),
+            images: z.array(z.string()).optional(),
+            state: z.enum(["GOOD", "BAD", "NEW", "BROKEN"]),
+          })
+        ),
+      })
+    ).optional(),
   })
   .openapi("Inspection");
 

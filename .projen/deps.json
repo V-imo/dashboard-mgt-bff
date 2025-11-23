@@ -156,7 +156,6 @@
     },
     {
       "name": "vimo-events",
-      "version": "0.23.0",
       "type": "runtime"
     },
     {

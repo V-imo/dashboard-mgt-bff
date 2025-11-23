@@ -12,11 +12,15 @@ import {
   PropertyCreatedEvent,
   PropertyDeletedEvent,
   PropertyUpdatedEvent,
+  ModelUpdatedEvent,
+  ModelCreatedEvent,
+  ModelDeletedEvent,
 } from "vimo-events"
 import { AgencyEntity } from "../core/agency/agency.entity"
 import { InspectionEntity } from "../core/inspection/inspection.entity"
 import { PropertyEntity } from "../core/property/property.entity"
 import { tracer } from "../core/utils"
+import { ModelEntity } from "../core/model/model.entity"
 
 const eventBridge = tracer.captureAWSv3Client(new EventBridgeClient())
 
@@ -58,6 +62,20 @@ export const handler = async (event: DynamoDBStreamEvent) => {
           await eventBridge.send(PropertyDeletedEvent.build(item))
         } else if (record.eventName === "MODIFY") {
           await eventBridge.send(PropertyUpdatedEvent.build(item))
+        }
+      }
+      else if (object._et.S === ModelEntity.entityName) {
+        const { item } = ModelEntity.build(EntityParser).parse(
+          unmarshall(object),
+        )
+        if (record.eventName === "INSERT") {
+          await eventBridge.send(ModelCreatedEvent.build(item))
+        }
+        else if (record.eventName === "REMOVE") {
+          await eventBridge.send(ModelDeletedEvent.build(item))
+        }
+        else if (record.eventName === "MODIFY") {
+          await eventBridge.send(ModelUpdatedEvent.build(item))
         }
       }
     }),
