@@ -1,9 +1,24 @@
-import { RoomsSchema } from "./property";
 import { z } from "zod";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { getUnixTime } from "date-fns";
 import { v4 as uuid } from "uuid";
 import { Model } from "../../core/model";
+
+export const RoomsSchema = z.array(
+  z.object({
+    name: z.string(),
+    area: z.number().optional(),
+    description: z.string().optional(),
+    elements: z.array(
+      z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        images: z.array(z.string()).optional(),
+        type: z.string(),
+      })
+    ),
+  })
+)
 
 export const ModelSchema = z.object({
   modelId: z.string(),

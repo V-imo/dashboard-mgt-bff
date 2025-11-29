@@ -4,9 +4,34 @@ import {
   string,
   number,
   InputItem,
+  list,
+  map,
 } from "dynamodb-toolbox";
 import { DashboardMgtBffTable } from "../dynamodb";
-import { RoomsSchema } from "../property/property.entity";
+
+export const RoomsSchema = list(
+  map({
+    name: string(),
+    area: number().optional(),
+    description: string().optional(),
+    elements: list(
+      map({
+        name: string(),
+        description: string().optional(),
+        images: list(string()).optional(),
+        type: string().enum(
+          "FURNITURE",
+          "STRUCTURAL",
+          "ELECTRICAL",
+          "PLUMBING",
+          "VENTILATION",
+          "SURFACE",
+          "OTHER"
+        ),
+      })
+    ),
+  })
+)
 
 export const ModelEntity = new Entity({
   name: "Model",

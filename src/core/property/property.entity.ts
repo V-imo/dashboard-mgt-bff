@@ -5,33 +5,10 @@ import {
   number,
   map,
   InputItem,
-  list,
 } from "dynamodb-toolbox";
 import { DashboardMgtBffTable } from "../dynamodb";
 
-export const RoomsSchema = list(
-  map({
-    name: string(),
-    area: number().optional(),
-    description: string().optional(),
-    elements: list(
-      map({
-        name: string(),
-        description: string().optional(),
-        images: list(string()).optional(),
-        type: string().enum(
-          "FURNITURE",
-          "STRUCTURAL",
-          "ELECTRICAL",
-          "PLUMBING",
-          "VENTILATION",
-          "SURFACE",
-          "OTHER"
-        ),
-      })
-    ),
-  })
-)
+
 
 export const PropertyEntity = new Entity({
   name: "Property",
@@ -54,8 +31,6 @@ export const PropertyEntity = new Entity({
       phoneNumber: string().optional(),
     }).optional(),
 
-    rooms: RoomsSchema,
-
     oplock: number(),
   }),
 
@@ -66,7 +41,7 @@ export const PropertyEntity = new Entity({
     propertyId: string;
     agencyId: string;
   }) => ({
-    PK: `AGENCY#${agencyId}`,
+    PK: `PROPERTY#${agencyId}`,
     SK: `PROPERTY#${propertyId}`,
   }),
 

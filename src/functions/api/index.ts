@@ -11,6 +11,8 @@ import { route as InspectionRoute } from "./inspection";
 import { route as PropertyRoute } from "./property";
 import { logger, tracer } from "../../core/utils";
 import { route as ModelRoute } from "./model";
+import { route as RoomRoute } from "./room";
+import { route as RoomElementRoute } from "./room-element";
 
 const app = new OpenAPIHono();
 
@@ -25,6 +27,8 @@ const routes = app
   .route("/agency", AgencyRoute)
   .route("/property", PropertyRoute)
   .route("/model", ModelRoute)
+  .route("/room", RoomRoute)
+  .route("/room-element", RoomElementRoute)
   .onError((error, c) => {
     console.error("Error:", JSON.stringify(error, null, 2));
 
