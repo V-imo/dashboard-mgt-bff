@@ -11,15 +11,11 @@ export const InspectionEntity = new Entity({
     inspectorId: string(),
     date: string(),
 
-    rooms: list(map({
+    elements: list(map({
+      elementId: string(),
       name: string(),
       description: string().optional(),
-      elements: list(map({
-        name: string(),
-        description: string().optional(),
-        images: list(string()).optional(),
-        state: string().enum("GOOD", "BAD", "NEW", "BROKEN"),
-      })),
+      state: string().enum("GOOD", "BAD", "NEW", "BROKEN", "MISSING"),
     })).optional(),
 
     oplock: number(),
@@ -33,7 +29,7 @@ export const InspectionEntity = new Entity({
     propertyId: string
     agencyId: string
   }) => ({
-    PK: `AGENCY#${agencyId}`,
+    PK: `INSPECTION#${agencyId}`,
     SK: `PROPERTY#${propertyId}#INSPECTION#${inspectionId}`,
   }),
   table: DashboardMgtBffTable,

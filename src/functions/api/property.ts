@@ -4,21 +4,7 @@ import { v4 as uuid } from "uuid";
 import { z } from "zod";
 import { Property } from "../../core/property";
 
-export const RoomsSchema = z.array(
-  z.object({
-    name: z.string(),
-    area: z.number().optional(),
-    description: z.string().optional(),
-    elements: z.array(
-      z.object({
-        name: z.string(),
-        description: z.string().optional(),
-        images: z.array(z.string()).optional(),
-        type: z.string(),
-      })
-    ),
-  })
-)
+
 
 export const PropertySchema = z
   .object({
@@ -39,7 +25,6 @@ export const PropertySchema = z
         phoneNumber: z.string().optional(),
       })
       .optional(),
-    rooms: RoomsSchema,
   })
   .openapi("Property");
 

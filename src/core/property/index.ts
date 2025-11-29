@@ -33,7 +33,7 @@ export namespace Property {
 
   export async function getAllByAgency(agencyId: string) {
     const { Items } = await DashboardMgtBffTable.build(QueryCommand)
-      .query({ partition: `AGENCY#${agencyId}` })
+      .query({ partition: `PROPERTY#${agencyId}` })
       .options({ maxPages: Infinity })
       .entities(PropertyEntity)
       .send()

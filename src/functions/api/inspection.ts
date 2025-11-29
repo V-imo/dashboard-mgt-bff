@@ -11,20 +11,15 @@ export const InspectionSchema = z
     status: z.enum(["TO_DO", "IN_PROGRESS", "DONE", "CANCELED"]),
     inspectorId: z.string().optional(),
     date: z.string(),
-    rooms: z.array(
+    elements: z.array(
       z.object({
+        elementId: z.string(),
         name: z.string(),
         description: z.string().optional(),
-        elements: z.array(
-          z.object({
-            name: z.string(),
-            description: z.string().optional(),
-            images: z.array(z.string()).optional(),
-            state: z.enum(["GOOD", "BAD", "NEW", "BROKEN"]),
-          })
-        ),
+        state: z.enum(["GOOD", "BAD", "NEW", "BROKEN", "MISSING"]),
       })
     ).optional(),
+
   })
   .openapi("Inspection");
 
