@@ -30,7 +30,7 @@ export namespace Model {
 
   export async function getAllByAgency(agencyId: string) {
     return DashboardMgtBffTable.build(QueryCommand)
-      .query({ partition: `MODEL#${agencyId}` })
+      .query({ partition: `MODELS#${agencyId}` })
       .options({ maxPages: Infinity })
       .entities(ModelEntity)
       .send();

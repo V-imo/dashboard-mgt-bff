@@ -41,7 +41,7 @@ export const PropertyEntity = new Entity({
     propertyId: string;
     agencyId: string;
   }) => ({
-    PK: `PROPERTY#${agencyId}`,
+    PK: `PROPERTIES#${agencyId}`,
     SK: `PROPERTY#${propertyId}`,
   }),
 

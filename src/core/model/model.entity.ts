@@ -52,7 +52,7 @@ export const ModelEntity = new Entity({
     modelId: string;
     agencyId: string;
   }) => ({
-    PK: `MODEL#${agencyId}`,
+    PK: `MODELS#${agencyId}`,
     SK: `MODEL#${modelId}`,
   }),
 

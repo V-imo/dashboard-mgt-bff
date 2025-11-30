@@ -19,7 +19,7 @@ export const AgencyEntity = new Entity({
     oplock: number(),
   }),
   computeKey: ({ agencyId }: { agencyId: string }) => ({
-    PK: "AGENCY",
+    PK: "AGENCIES",
     SK: `AGENCY#${agencyId}`,
   }),
   table: DashboardMgtBffTable,

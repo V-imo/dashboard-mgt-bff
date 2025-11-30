@@ -4,28 +4,28 @@ import { getUnixTime } from "date-fns";
 import { v4 as uuid } from "uuid";
 import { Model } from "../../core/model";
 
-export const RoomsSchema = z.array(
-  z.object({
+export const ModelSchema = z
+  .object({
+    modelId: z.string(),
+    agencyId: z.string(),
     name: z.string(),
-    area: z.number().optional(),
-    description: z.string().optional(),
-    elements: z.array(
+    rooms: z.array(
       z.object({
         name: z.string(),
+        area: z.number().optional(),
         description: z.string().optional(),
-        images: z.array(z.string()).optional(),
-        type: z.string(),
+        elements: z.array(
+          z.object({
+            name: z.string(),
+            description: z.string().optional(),
+            images: z.array(z.string()).optional(),
+            type: z.string(),
+          })
+        ),
       })
     ),
   })
-)
-
-export const ModelSchema = z.object({
-  modelId: z.string(),
-  agencyId: z.string(),
-  name: z.string(),
-  rooms: RoomsSchema,
-}).openapi("Model");
+  .openapi("Model");
 
 export const ModelsSchema = z.array(ModelSchema).openapi("Models");
 
@@ -183,4 +183,4 @@ export const route = new OpenAPIHono()
       await Model.del(modelId, agencyId);
       return c.json("Model deleted", 200);
     }
-  )
+  );

@@ -26,7 +26,7 @@ export namespace Inspection {
 
   export async function getAllByAgency(agencyId: string) {
     return DashboardMgtBffTable.build(QueryCommand)
-      .query({ partition: `INSPECTION#${agencyId}` })
+      .query({ partition: `INSPECTIONS#${agencyId}` })
       .options({ maxPages: Infinity })
       .entities(InspectionEntity)
       .send();
@@ -48,7 +48,7 @@ export namespace Inspection {
   ) {
     return DashboardMgtBffTable.build(QueryCommand)
       .query({
-        partition: `INSPECTION#${agencyId}`,
+        partition: `INSPECTIONS#${agencyId}`,
         range: { beginsWith: `PROPERTY#${propertyId}` },
       })
       .options({ maxPages: Infinity })
