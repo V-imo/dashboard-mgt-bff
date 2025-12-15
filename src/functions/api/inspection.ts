@@ -136,7 +136,7 @@ export const route = new OpenAPIHono()
         body: {
           content: {
             "application/json": {
-              schema: InspectionSchema,
+              schema: InspectionSchema.omit({ agencyId: true }),
             },
           },
         },
@@ -174,7 +174,7 @@ export const route = new OpenAPIHono()
         body: {
           content: {
             "application/json": {
-              schema: InspectionSchema,
+              schema: InspectionSchema.omit({ agencyId: true }),
             },
           },
         },
