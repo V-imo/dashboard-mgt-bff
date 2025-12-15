@@ -15,8 +15,9 @@ import { ServerlessSpyEvents } from "../spy";
 import { eventualAssertion } from "../utils";
 import { ApiClient } from "../utils/api";
 import { generateInspection } from "../utils/generator";
+import { createEmployee } from "../utils/auth";
 
-const { ApiUrl, ServerlessSpyWsUrl } = Object.values(
+const { ApiUrl, ServerlessSpyWsUrl, UserPoolId, UserPoolClientId } = Object.values(
   JSON.parse(fs.readFileSync("test.output.json", "utf8"))
 )[0] as Record<string, string>;
 
@@ -39,6 +40,12 @@ jest.setTimeout(60000);
 test("should create an inspection", async () => {
   const inspection = generateInspection();
 
+  const user = await createEmployee({
+    userPoolId: UserPoolId,
+    clientId: UserPoolClientId,
+    agencyId: inspection.agencyId,
+  });
+  const apiClient = new ApiClient(ApiUrl, user.idToken);
   const inspectionId = await apiClient.createInspection(inspection);
 
   const eventInspectionCreated = (
@@ -56,6 +63,12 @@ test("should create an inspection", async () => {
 
 test("should modify an inspection", async () => {
   const inspection = generateInspection();
+  const user = await createEmployee({
+    userPoolId: UserPoolId,
+    clientId: UserPoolClientId,
+    agencyId: inspection.agencyId,
+  });
+  const apiClient = new ApiClient(ApiUrl, user.idToken);
   const inspectionId = await apiClient.createInspection(inspection);
 
   const newInspection = {
@@ -96,13 +109,18 @@ test("should modify an inspection", async () => {
 test("should delete an inspection", async () => {
   const inspection = generateInspection();
 
+  const user = await createEmployee({
+    userPoolId: UserPoolId,
+    clientId: UserPoolClientId,
+    agencyId: inspection.agencyId,
+  });
+  const apiClient = new ApiClient(ApiUrl, user.idToken);
   const inspectionId = await apiClient.createInspection(inspection);
 
   await eventualAssertion(
     async () => {
       const res = await apiClient.deleteInspection(
         inspectionId,
-        inspection.agencyId,
         inspection.propertyId
       );
       return res;
@@ -141,6 +159,13 @@ test("should get a lot of inspections", async () => {
     propertyId: inspection4.propertyId,
   });
 
+  const user = await createEmployee({
+    userPoolId: UserPoolId,
+    clientId: UserPoolClientId,
+    agencyId: inspection1.agencyId,
+  });
+  const apiClient = new ApiClient(ApiUrl, user.idToken);
+
   const inspectionIds = await Promise.all([
     apiClient.createInspection(inspection1),
     apiClient.createInspection(inspection2),
@@ -151,7 +176,7 @@ test("should get a lot of inspections", async () => {
 
   await eventualAssertion(
     async () => {
-      const res = await apiClient.getInspections(inspection1.agencyId);
+      const res = await apiClient.getInspections();
       return res;
     },
     async (json) => {
@@ -160,8 +185,7 @@ test("should get a lot of inspections", async () => {
   );
   await eventualAssertion(
     async () => {
-      const res = await apiClient.getInspectionsByAgencyAndProperty(
-        inspection1.agencyId,
+      const res = await apiClient.getInspectionsByProperty(
         inspection1.propertyId
       );
       return res;
@@ -173,14 +197,13 @@ test("should get a lot of inspections", async () => {
   await eventualAssertion(
     async () => {
       const res = await apiClient.getInspection(
-        inspection1.agencyId,
         inspection1.propertyId,
         inspectionIds[0]
       );
       return res;
     },
     async (json) => {
-      expect(json).toEqual({...inspection1, inspectionId: inspectionIds[0]});
+      expect(json).toEqual({ ...inspection1, inspectionId: inspectionIds[0] });
     }
   );
 });

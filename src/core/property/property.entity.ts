@@ -6,6 +6,7 @@ import {
   map,
   InputItem,
   list,
+  boolean,
 } from "dynamodb-toolbox";
 import { DashboardMgtBffTable } from "../dynamodb";
 
@@ -57,6 +58,7 @@ export const PropertyEntity = new Entity({
     rooms: RoomsSchema,
 
     oplock: number(),
+    latched: boolean().optional(),
   }),
 
   computeKey: ({

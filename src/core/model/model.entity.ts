@@ -4,6 +4,7 @@ import {
   string,
   number,
   InputItem,
+  boolean,
 } from "dynamodb-toolbox";
 import { DashboardMgtBffTable } from "../dynamodb";
 import { RoomsSchema } from "../property/property.entity";
@@ -18,6 +19,7 @@ export const ModelEntity = new Entity({
     rooms: RoomsSchema,
 
     oplock: number(),
+    latched: boolean().optional(),
   }),
 
   computeKey: ({

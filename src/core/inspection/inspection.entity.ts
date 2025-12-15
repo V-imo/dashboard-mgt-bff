@@ -1,4 +1,4 @@
-import { Entity, item, string, InputItem, number, any, list, map } from "dynamodb-toolbox"
+import { Entity, item, string, InputItem, number, list, map, boolean } from "dynamodb-toolbox"
 import { DashboardMgtBffTable } from "../dynamodb"
 
 export const InspectionEntity = new Entity({
@@ -23,6 +23,7 @@ export const InspectionEntity = new Entity({
     })).optional(),
 
     oplock: number(),
+    latched: boolean().optional(),
   }),
   computeKey: ({
     inspectionId,

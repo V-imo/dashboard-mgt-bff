@@ -1,7 +1,9 @@
 {
   "test-dashboard-mgt-bff": {
     "EventBusName": "testdashboardmgtbffEventBus4604F85E",
-    "ApiUrl": "https://vj3simzvn9.execute-api.eu-central-1.amazonaws.com/",
+    "UserPoolClientId": "1qv6k97qad4l31iq661ai0d0v4",
+    "UserPoolId": "eu-central-1_25h5AXNBm",
+    "ApiUrl": "https://m5tjs1oieb.execute-api.eu-central-1.amazonaws.com/",
     "ServerlessSpyWsUrl": "awmytlfkneef7-ats.iot.eu-central-1.amazonaws.com/TestDashboardMgtBff"
   }
 }

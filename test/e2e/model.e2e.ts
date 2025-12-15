@@ -15,8 +15,9 @@ import { ServerlessSpyEvents } from "../spy";
 import { eventualAssertion } from "../utils";
 import { ApiClient } from "../utils/api";
 import { generateModel } from "../utils/generator";
+import { createEmployee } from "../utils/auth";
 
-const { ApiUrl, ServerlessSpyWsUrl } = Object.values(
+const { ApiUrl, ServerlessSpyWsUrl, UserPoolId, UserPoolClientId } = Object.values(
   JSON.parse(fs.readFileSync("test.output.json", "utf8"))
 )[0] as Record<string, string>;
 
@@ -38,6 +39,12 @@ jest.setTimeout(60000);
 
 test("should create a model", async () => {
   const model = generateModel();
+  const user = await createEmployee({
+    userPoolId: UserPoolId,
+    clientId: UserPoolClientId,
+    agencyId: model.agencyId,
+  });
+  const apiClient = new ApiClient(ApiUrl, user.idToken);
   const modelId = await apiClient.createModel(model);
   expect(modelId).toBeDefined();
 
@@ -55,6 +62,12 @@ test("should create a model", async () => {
 
 test("should update a model", async () => {
   const model = generateModel();
+  const user = await createEmployee({
+    userPoolId: UserPoolId,
+    clientId: UserPoolClientId,
+    agencyId: model.agencyId,
+  });
+  const apiClient = new ApiClient(ApiUrl, user.idToken);
   const modelId = await apiClient.createModel(model);
   expect(modelId).toBeDefined();
 
@@ -65,7 +78,7 @@ test("should update a model", async () => {
   await apiClient.updateModel(newModel);
   await eventualAssertion(
     async () => {
-      const res = await apiClient.getModel(model.agencyId, modelId);
+      const res = await apiClient.getModel(modelId);
       return res;
     },
     async (json) => {
@@ -86,13 +99,20 @@ test("should update a model", async () => {
 
 test("should delete a model", async () => {
   const model = generateModel();
+
+  const user = await createEmployee({
+    userPoolId: UserPoolId,
+    clientId: UserPoolClientId,
+    agencyId: model.agencyId,
+  });
+  const apiClient = new ApiClient(ApiUrl, user.idToken);
   const modelId = await apiClient.createModel(model);
   expect(modelId).toBeDefined();
 
-  await apiClient.deleteModel(model.agencyId, modelId);
+  await apiClient.deleteModel(modelId);
   await eventualAssertion(
     async () => {
-      const res = await apiClient.getModel(model.agencyId, modelId);
+      const res = await apiClient.getModel(modelId);
       return res;
     },
     async (json) => {
@@ -115,6 +135,12 @@ test("should query models", async () => {
   const model = generateModel();
   const model2 = generateModel({ agencyId: model.agencyId });
   const model3 = generateModel({ agencyId: model.agencyId });
+  const user = await createEmployee({
+    userPoolId: UserPoolId,
+    clientId: UserPoolClientId,
+    agencyId: model.agencyId,
+  });
+  const apiClient = new ApiClient(ApiUrl, user.idToken);
   const modelIds = await Promise.all([
     apiClient.createModel(model),
     apiClient.createModel(model2),
@@ -124,7 +150,7 @@ test("should query models", async () => {
 
   await eventualAssertion(
     async () => {
-      const res = await apiClient.getModels(model.agencyId);
+      const res = await apiClient.getModels();
       return res;
     },
     async (json) => {

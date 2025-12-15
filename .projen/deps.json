@@ -1,6 +1,10 @@
 {
   "dependencies": [
     {
+      "name": "@aws-sdk/client-cognito-identity-provider",
+      "type": "build"
+    },
+    {
       "name": "@faker-js/faker",
       "version": "8",
       "type": "build"
@@ -8,6 +12,10 @@
     {
       "name": "@stylistic/eslint-plugin",
       "version": "^2",
+      "type": "build"
+    },
+    {
+      "name": "@types/aws-lambda",
       "type": "build"
     },
     {

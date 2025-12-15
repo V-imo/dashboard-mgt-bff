@@ -4,6 +4,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { getUnixTime } from "date-fns";
 import { v4 as uuid } from "uuid";
 import { Model } from "../../core/model";
+import { getUserFromContext } from "./utils";
 
 export const ModelSchema = z.object({
   modelId: z.string(),
@@ -18,10 +19,7 @@ export const route = new OpenAPIHono()
   .openapi(
     createRoute({
       method: "get",
-      path: "/{agencyId}",
-      request: {
-        params: z.object({ agencyId: z.string() }),
-      },
+      path: "/",
       responses: {
         200: {
           content: {
@@ -35,7 +33,7 @@ export const route = new OpenAPIHono()
       description: "Get all models of an agency",
     }),
     async (c) => {
-      const { agencyId } = c.req.valid("param");
+      const { agencyId } = getUserFromContext(c);
       const { Items: models } = await Model.getAllByAgency(agencyId);
       return c.json(ModelsSchema.parse(models || []), 200);
     }
@@ -43,9 +41,9 @@ export const route = new OpenAPIHono()
   .openapi(
     createRoute({
       method: "get",
-      path: "/{agencyId}/{modelId}",
+      path: "/{modelId}",
       request: {
-        params: z.object({ agencyId: z.string(), modelId: z.string() }),
+        params: z.object({ modelId: z.string() }),
       },
       responses: {
         200: {
@@ -68,7 +66,8 @@ export const route = new OpenAPIHono()
       description: "Get a model",
     }),
     async (c) => {
-      const { agencyId, modelId } = c.req.valid("param");
+      const { agencyId } = getUserFromContext(c);
+      const { modelId } = c.req.valid("param");
       const { Item: model } = await Model.get(modelId, agencyId);
       if (!model) {
         return c.json({ message: "Model not found" }, 404);
@@ -84,7 +83,7 @@ export const route = new OpenAPIHono()
         body: {
           content: {
             "application/json": {
-              schema: ModelSchema.omit({ modelId: true }),
+              schema: ModelSchema.omit({ modelId: true, agencyId: true }),
             },
           },
         },
@@ -101,12 +100,15 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
+      const { agencyId } = getUserFromContext(c);
       const model = await c.req.json();
       const modelId = `model_${uuid()}`;
       await Model.update({
         ...model,
         modelId,
+        agencyId,
         oplock: getUnixTime(new Date()),
+        latched: false,
       });
       return c.json(modelId, 200);
     }
@@ -119,7 +121,7 @@ export const route = new OpenAPIHono()
         body: {
           content: {
             "application/json": {
-              schema: ModelSchema,
+              schema: ModelSchema.omit({ agencyId: true }),
             },
           },
         },
@@ -136,10 +138,13 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
+      const { agencyId } = getUserFromContext(c);
       const model = await c.req.json();
       await Model.update({
         ...model,
+        agencyId,
         oplock: getUnixTime(new Date()),
+        latched: false,
       });
       return c.json("Model updated", 200);
     }
@@ -147,9 +152,9 @@ export const route = new OpenAPIHono()
   .openapi(
     createRoute({
       method: "delete",
-      path: "/{agencyId}/{modelId}",
+      path: "/{modelId}",
       request: {
-        params: z.object({ agencyId: z.string(), modelId: z.string() }),
+        params: z.object({ modelId: z.string() }),
       },
       responses: {
         200: {
@@ -164,7 +169,8 @@ export const route = new OpenAPIHono()
       description: "Delete a model",
     }),
     async (c) => {
-      const { agencyId, modelId } = c.req.valid("param");
+      const { agencyId } = getUserFromContext(c);
+      const { modelId } = c.req.valid("param");
       await Model.del(modelId, agencyId);
       return c.json("Model deleted", 200);
     }

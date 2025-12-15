@@ -3,6 +3,7 @@ import * as apigw from "aws-cdk-lib/aws-apigatewayv2";
 import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as ddb from "aws-cdk-lib/aws-dynamodb";
 import * as events from "aws-cdk-lib/aws-events";
+import * as events_targets from "aws-cdk-lib/aws-events-targets";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as levs from "aws-cdk-lib/aws-lambda-event-sources";
 import * as ln from "aws-cdk-lib/aws-lambda-nodejs";
@@ -10,6 +11,9 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { ServerlessSpy } from "serverless-spy";
+import * as cognito from "aws-cdk-lib/aws-cognito";
+import * as apigw_authorizers from "aws-cdk-lib/aws-apigatewayv2-authorizers";
+import { AgencyCreatedEvent } from "vimo-events";
 
 export interface DashboardMgtBffProps extends cdk.StackProps {
   serviceName: string;
@@ -20,19 +24,8 @@ export class DashboardMgtBff extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DashboardMgtBffProps) {
     super(scope, id, props);
 
-    let eventBus: cdk.aws_events.IEventBus;
-    if (props.stage.startsWith("test")) {
-      eventBus = new events.EventBus(this, "EventBus");
-    } else {
-      eventBus = events.EventBus.fromEventBusArn(
-        this,
-        "EventBus",
-        ssm.StringParameter.valueForStringParameter(
-          this,
-          `/vimo/${props.stage}/event-bus-arn`
-        )
-      );
-    }
+    const { userPool, userPoolClient } = this.getAuth(props.stage);
+    const eventBus = this.getEventBus(props.stage);
 
     const table = new ddb.TableV2(this, "DashboardMgtBffTable", {
       partitionKey: { name: "PK", type: ddb.AttributeType.STRING },
@@ -43,6 +36,37 @@ export class DashboardMgtBff extends cdk.Stack {
         props.stage === "prod"
           ? cdk.RemovalPolicy.RETAIN
           : cdk.RemovalPolicy.DESTROY,
+    });
+
+    const listener = new ln.NodejsFunction(this, "Listener", {
+      entry: `${__dirname}/functions/listener.ts`,
+      environment: {
+        STAGE: props.stage,
+        SERVICE: props.serviceName,
+        TABLE_NAME: table.tableName,
+        EVENT_BUS_NAME: eventBus.eventBusName,
+      },
+      runtime: lambda.Runtime.NODEJS_22_X,
+      architecture: lambda.Architecture.ARM_64,
+      logRetention: logs.RetentionDays.THREE_DAYS,
+      tracing: lambda.Tracing.ACTIVE,
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+    });
+    table.grantReadWriteData(listener);
+    eventBus.grantPutEventsTo(listener);
+
+    new events.Rule(this, "Rule", {
+      eventBus,
+      eventPattern: {
+        source: ["custom"],
+        detailType: [AgencyCreatedEvent.type],
+      },
+      targets: [
+        new events_targets.LambdaFunction(listener, {
+          retryAttempts: 3,
+        }),
+      ],
     });
 
     const trigger = new ln.NodejsFunction(this, "Trigger", {
@@ -103,14 +127,25 @@ export class DashboardMgtBff extends cdk.Stack {
     new cdk.CfnOutput(this, "ApiUrl", {
       value: api.url ?? "",
     });
-    new cdk.CfnOutput(this, "EventBusName", {
-      value: eventBus.eventBusName,
-    });
 
     const apiIntegration = new integrations.HttpLambdaIntegration(
       "ApiIntegration",
       apiFunction
     );
+
+    const authorizer = new apigw_authorizers.HttpUserPoolAuthorizer(
+      `${id}Authorizer`,
+      userPool,
+      {
+        userPoolClients: [userPoolClient],
+      }
+    );
+    api.addRoutes({
+      path: "/doc",
+      methods: [apigw.HttpMethod.GET],
+      integration: apiIntegration,
+      authorizer: undefined,
+    });
     api.addRoutes({
       path: "/{proxy+}",
       methods: [
@@ -121,7 +156,7 @@ export class DashboardMgtBff extends cdk.Stack {
         apigw.HttpMethod.DELETE,
       ],
       integration: apiIntegration,
-      // authorizer: undefined, // TODO: add later
+      authorizer,
     });
 
     if (props.stage.startsWith("test")) {
@@ -130,5 +165,76 @@ export class DashboardMgtBff extends cdk.Stack {
       });
       serverlessSpy.spy();
     }
+  }
+
+  getEventBus(stage: string) {
+    if (stage.startsWith("test")) {
+      const eventBus = new events.EventBus(this, "EventBus");
+      new cdk.CfnOutput(this, "EventBusName", {
+        value: eventBus.eventBusName,
+      });
+      return eventBus;
+    }
+    return events.EventBus.fromEventBusArn(
+      this,
+      "EventBus",
+      ssm.StringParameter.valueForStringParameter(
+        this,
+        `/vimo/${stage}/event-bus-arn`
+      )
+    );
+  }
+
+  getAuth(stage: string) {
+    if (stage.startsWith("test")) {
+      const userPool = new cognito.UserPool(this, "UserPool", {
+        customAttributes: {
+          currentAgency: new cognito.StringAttribute({ mutable: true }),
+        },
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      });
+
+      new cdk.CfnOutput(this, "UserPoolId", {
+        value: userPool.userPoolId,
+      });
+
+      const userPoolClient = new cognito.UserPoolClient(
+        this,
+        "UserPoolClient",
+        {
+          userPool,
+          authFlows: {
+            userPassword: true,
+          },
+        }
+      );
+      new cdk.CfnOutput(this, "UserPoolClientId", {
+        value: userPoolClient.userPoolClientId,
+      });
+
+      return { userPool, userPoolClient };
+    }
+    const userPoolArn = ssm.StringParameter.valueForStringParameter(
+      this,
+      `/vimo/${stage}/user-pool-arn`
+    );
+    const userPoolClientId = ssm.StringParameter.valueForStringParameter(
+      this,
+      `/vimo/${stage}/user-pool-client-id`
+    );
+
+    const userPool = cognito.UserPool.fromUserPoolArn(
+      this,
+      "UserPool",
+      userPoolArn
+    );
+
+    const userPoolClient = cognito.UserPoolClient.fromUserPoolClientId(
+      this,
+      "UserPoolClient",
+      userPoolClientId
+    );
+
+    return { userPool, userPoolClient };
   }
 }
