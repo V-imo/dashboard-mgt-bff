@@ -40,8 +40,9 @@ export const generateInspection = makeGenerator<InspectionInput>(() => {
     rooms: generateInspectionRooms(),
   };
 });
-export const generateAgency = makeGenerator<AgencyInput>(() => {
+export const generateAgency = makeGenerator<AgencyInput & { agencyId: string }>(() => {
   return {
+    agencyId: `agency_${faker.string.uuid()}`,
     name: faker.company.name(),
     contactMail: faker.internet.email(),
     contactPhone: faker.phone.number(),

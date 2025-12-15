@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { getUnixTime } from "date-fns";
 import { v4 as uuid } from "uuid";
 import { Inspection } from "../../core/inspection";
+import { getUserFromContext } from "./utils";
 
 export const InspectionSchema = z
   .object({
@@ -36,12 +37,7 @@ export const route = new OpenAPIHono()
   .openapi(
     createRoute({
       method: "get",
-      path: "/{agencyId}",
-      request: {
-        params: z.object({
-          agencyId: z.string(),
-        }),
-      },
+      path: "/",
       responses: {
         200: {
           content: {
@@ -54,8 +50,7 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
-      //TODO: have a function that get the agency from cognito session
-      const { agencyId } = c.req.valid("param");
+      const { agencyId } = getUserFromContext(c);
       const { Items } = await Inspection.getAllByAgency(agencyId);
 
       return c.json(InspectionsSchema.parse(Items || []), 200);
@@ -64,9 +59,9 @@ export const route = new OpenAPIHono()
   .openapi(
     createRoute({
       method: "get",
-      path: "/{agencyId}/{propertyId}",
+      path: "/{propertyId}",
       request: {
-        params: z.object({ agencyId: z.string(), propertyId: z.string() }),
+        params: z.object({ propertyId: z.string() }),
       },
       responses: {
         200: {
@@ -81,7 +76,8 @@ export const route = new OpenAPIHono()
       description: "Get all inspections of an agency and property",
     }),
     async (c) => {
-      const { agencyId, propertyId } = c.req.valid("param");
+      const { agencyId } = getUserFromContext(c);
+      const { propertyId } = c.req.valid("param");
       const { Items: inspections } = await Inspection.getAllByAgencyAndProperty(
         agencyId,
         propertyId
@@ -92,10 +88,9 @@ export const route = new OpenAPIHono()
   .openapi(
     createRoute({
       method: "get",
-      path: "/{agencyId}/{propertyId}/{inspectionId}",
+      path: "/{propertyId}/{inspectionId}",
       request: {
         params: z.object({
-          agencyId: z.string(),
           propertyId: z.string(),
           inspectionId: z.string(),
         }),
@@ -120,7 +115,8 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
-      const { agencyId, propertyId, inspectionId } = c.req.valid("param");
+      const { agencyId } = getUserFromContext(c);
+      const { propertyId, inspectionId } = c.req.valid("param");
       const { Item: inspection } = await Inspection.get(
         agencyId,
         propertyId,
@@ -157,12 +153,15 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
+      const { agencyId } = getUserFromContext(c);
       const inspection = await c.req.json();
       const inspectionId = `inspection_${uuid()}`;
       await Inspection.update({
         ...inspection,
+        agencyId,
         inspectionId,
         oplock: getUnixTime(new Date()),
+        latched: false,
       });
       return c.json(inspectionId, 200);
     }
@@ -192,10 +191,13 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
+      const { agencyId } = getUserFromContext(c);
       const inspection = await c.req.json();
       await Inspection.update({
         ...inspection,
+        agencyId,
         oplock: getUnixTime(new Date()),
+        latched: false,
       });
       return c.json("Inspection updated", 200);
     }
@@ -206,7 +208,7 @@ export const route = new OpenAPIHono()
       path: "/{inspectionId}",
       request: {
         params: z.object({ inspectionId: z.string() }),
-        query: z.object({ agencyId: z.string(), propertyId: z.string() }),
+        query: z.object({ propertyId: z.string() }),
       },
       responses: {
         200: {
@@ -220,8 +222,9 @@ export const route = new OpenAPIHono()
       },
     }),
     async (c) => {
+      const { agencyId } = getUserFromContext(c);
       const { inspectionId } = c.req.valid("param");
-      const { agencyId, propertyId } = c.req.query();
+      const { propertyId } = c.req.query();
       await Inspection.del(inspectionId, agencyId, propertyId);
       return c.json("Inspection deleted", 200);
     }
