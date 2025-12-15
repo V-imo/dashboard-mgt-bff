@@ -1,6 +1,5 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { getUnixTime } from "date-fns";
-import { v4 as uuid } from "uuid";
 import { z } from "zod";
 import { Agency } from "../../core/agency";
 import { getUserFromContext } from "./utils";
@@ -58,13 +57,39 @@ export const route = new OpenAPIHono()
   )
   .openapi(
     createRoute({
+      method: "get",
+      path: "/all",
+      responses: {
+        200: {
+          description: "Get all agencies of user",
+          content: {
+            "application/json": {
+              schema: z.array(AgencySchema),
+            },
+          },
+        },
+      },
+      description: "Get an agency",
+    }),
+    async (c) => {
+      const { groups } = getUserFromContext(c);
+
+      const agencies = await Promise.all(groups.map(async (id) => {
+        const agency = await Agency.get(id);
+        return AgencySchema.parse(agency);
+      }));
+      return c.json(agencies, 200);
+    }
+  )
+  .openapi(
+    createRoute({
       method: "patch",
       path: "/",
       request: {
         body: {
           content: {
             "application/json": {
-              schema: AgencySchema,
+              schema: AgencySchema.omit({ agencyId: true }),
             },
           },
         },
