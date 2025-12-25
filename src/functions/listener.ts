@@ -15,6 +15,7 @@ export const handler = async (
 ) => {
   if (event["detail-type"] === AgencyCreatedEvent.type) {
     const detail = AgencyCreatedEvent.parse(event.detail);
+    if(detail.source !== process.env.SERVICE) return
     await Agency.update({
       ...detail.data,
       oplock: detail.timestamp,
@@ -22,6 +23,7 @@ export const handler = async (
     });
   }else if (event["detail-type"] === AgencyUpdatedEvent.type) {
     const detail = AgencyUpdatedEvent.parse(event.detail);
+    if(detail.source !== process.env.SERVICE) return
     await Agency.update({
       ...detail.data,
       oplock: detail.timestamp,
