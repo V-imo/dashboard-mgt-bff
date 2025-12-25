@@ -13,7 +13,7 @@ import { Construct } from "constructs";
 import { ServerlessSpy } from "serverless-spy";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as apigw_authorizers from "aws-cdk-lib/aws-apigatewayv2-authorizers";
-import { AgencyCreatedEvent } from "vimo-events";
+import { AgencyCreatedEvent, AgencyUpdatedEvent } from "vimo-events";
 
 export interface DashboardMgtBffProps extends cdk.StackProps {
   serviceName: string;
@@ -36,6 +36,7 @@ export class DashboardMgtBff extends cdk.Stack {
         props.stage === "prod"
           ? cdk.RemovalPolicy.RETAIN
           : cdk.RemovalPolicy.DESTROY,
+      timeToLiveAttribute: "ttl",
     });
 
     const listener = new ln.NodejsFunction(this, "Listener", {
@@ -60,7 +61,7 @@ export class DashboardMgtBff extends cdk.Stack {
       eventBus,
       eventPattern: {
         source: ["custom"],
-        detailType: [AgencyCreatedEvent.type],
+        detailType: [AgencyCreatedEvent.type, AgencyUpdatedEvent.type],
       },
       targets: [
         new events_targets.LambdaFunction(listener, {

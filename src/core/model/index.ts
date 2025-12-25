@@ -10,7 +10,7 @@ import { DashboardMgtBffTable } from "../dynamodb";
 
 export namespace Model {
   export async function update(model: ModelEntityType) {
-    ModelEntity.build(UpdateAttributesCommand)
+    await ModelEntity.build(UpdateAttributesCommand)
       .item(model)
       .options({
         condition: {

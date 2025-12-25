@@ -4,7 +4,7 @@ import { ignoreOplockError } from "../utils"
 
 export namespace Agency {
   export async function update(agency: AgencyEntityType) {
-    AgencyEntity.build(UpdateAttributesCommand)
+    await AgencyEntity.build(UpdateAttributesCommand)
       .item(agency)
       .options({
         condition: {

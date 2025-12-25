@@ -1,5 +1,5 @@
 import { EventBridgeEvent } from "aws-lambda";
-import { AgencyCreatedEvent } from "vimo-events";
+import { AgencyCreatedEvent, AgencyUpdatedEvent } from "vimo-events";
 import { Agency } from "../core/agency";
 
 type EventEnvelope = {
@@ -15,6 +15,13 @@ export const handler = async (
 ) => {
   if (event["detail-type"] === AgencyCreatedEvent.type) {
     const detail = AgencyCreatedEvent.parse(event.detail);
+    await Agency.update({
+      ...detail.data,
+      oplock: detail.timestamp,
+      latched: true,
+    });
+  }else if (event["detail-type"] === AgencyUpdatedEvent.type) {
+    const detail = AgencyUpdatedEvent.parse(event.detail);
     await Agency.update({
       ...detail.data,
       oplock: detail.timestamp,

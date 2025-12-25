@@ -10,7 +10,7 @@ import { ignoreOplockError } from "../utils"
 
 export namespace Property {
   export async function update(property: PropertyEntityType) {
-    PropertyEntity.build(UpdateAttributesCommand)
+    await PropertyEntity.build(UpdateAttributesCommand)
       .item(property)
       .options({
         condition: {
