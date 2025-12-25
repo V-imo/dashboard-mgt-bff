@@ -10,7 +10,7 @@ import { ignoreOplockError } from "../utils";
 
 export namespace Inspection {
   export async function update(inspection: InspectionEntityType) {
-    InspectionEntity.build(UpdateAttributesCommand)
+    await InspectionEntity.build(UpdateAttributesCommand)
       .item(inspection)
       .options({
         condition: {
